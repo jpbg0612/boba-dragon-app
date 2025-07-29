@@ -11,7 +11,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      # Le damos la llave de prueba para que las pruebas siempre la usen.
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     steps:
@@ -40,8 +39,9 @@ jobs:
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
       
-      # Configura la llave PUBLICABLE de Stripe correcta.
+      # ¡CORREGIDO! Configura la llave PUBLICABLE de Stripe correcta.
       - name: Configure Stripe Publishable Key
+        # Cambiamos el delimitador de '/' a '|' para evitar errores con caracteres especiales.
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "Using LIVE Stripe publishable key"
