@@ -17,15 +17,21 @@
 </head>
 <body class="text-gray-200">
 
-    <!-- ... tu contenido HTML ... -->
+    <!-- ... tu contenido HTML (auth-container, app, etc.) ... -->
+    <div id="auth-container" class="fixed inset-0 bg-brand-darker z-50 flex items-center justify-center p-4"></div>
+    <div id="app" class="max-w-4xl mx-auto min-h-screen bg-brand-darker shadow-2xl" style="display: none;">
+        <!-- ... header, main, nav, etc. ... -->
+    </div>
 
-    <!-- Scripts Mágicos de Firebase Hosting -->
+    <!-- ¡CORRECCIÓN CLAVE! -->
+    <!-- 1. Cargamos la "caja de herramientas" principal de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    
+    <!-- 2. Ahora sí, el "script mágico" puede encontrarla y funcionar -->
     <script src="/__/firebase/init.js"></script>
     
+    <!-- 3. Finalmente, cargamos el resto de nuestra app -->
     <script type="module" src="js/main.js"></script>
-    
-    <!-- ¡IMPORTANTE! El script de Google Maps se ha eliminado de aquí. -->
-    <!-- Ahora se carga de forma segura y dinámica desde maps.js -->
     
 </body>
 </html>
