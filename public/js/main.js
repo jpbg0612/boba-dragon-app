@@ -5,7 +5,7 @@ import * as auth from './auth.js';
 import * as api from './api.js';
 import * as ui from './ui.js';
 import * as checkout from './checkout.js';
-import { loadGoogleMapsScript } from './maps.js'; // ¡NUEVO! Importamos el cargador de mapas.
+import { loadGoogleMapsScript } from './maps.js';
 
 // --- VARIABLES GLOBALES ---
 let confirmCallback = null;
@@ -13,11 +13,60 @@ let customerOrdersUnsubscribe = null;
 
 // --- MANEJADORES DE AUTENTICACIÓN (UI) ---
 const handleLogin = async (e) => {
-    // ...
+    const button = e.target.closest('button');
+    ui.setButtonLoadingState(button);
+
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        ui.showNotification("Por favor completa todos los campos", true);
+        ui.revertButtonLoadingState(button);
+        return;
+    }
+    
+    try {
+        await auth.handleLogin(email, password);
+        // El listener onUserLoggedIn se encargará del resto.
+    } catch (error) {
+        ui.showNotification("Usuario o contraseña incorrectos", true);
+        ui.revertButtonLoadingState(button);
+    }
 };
 
 const handleRegister = async (e) => {
-    // ...
+    const button = e.target.closest('button');
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+
+    if (!name || !email || !password) {
+        ui.showNotification("Por favor completa todos los campos", true);
+        return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        ui.showNotification("Por favor ingresa un correo electrónico válido.", true);
+        return;
+    }
+
+    if (password.length < 6) {
+        ui.showNotification("La contraseña debe tener al menos 6 caracteres.", true);
+        return;
+    }
+
+    ui.setButtonLoadingState(button);
+
+    try {
+        await auth.handleRegister(name, email, password);
+        ui.showNotification("¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
+    } catch (error) {
+        const message = error.code === 'auth/email-already-in-use' ? "Este correo ya está registrado" : `Error: ${error.message}`;
+        ui.showNotification(message, true);
+    } finally {
+        ui.revertButtonLoadingState(button);
+    }
 };
 
 // --- LÓGICA DE INICIALIZACIÓN Y ESTADO DE LA APP ---
@@ -27,10 +76,7 @@ function onUserLoggedIn(userProfile) {
     document.getElementById('app').style.display = 'block';
     const profileButtonText = document.getElementById('profile-button-text');
     profileButtonText.textContent = userProfile.nombre || "Usuario";
-
-    // ¡NUEVO! Cargamos el script de Google Maps de forma segura en cuanto el usuario entra.
     loadGoogleMapsScript();
-
     if (userProfile.rol === 'repartidor') {
         document.getElementById('main-nav').style.display = 'none';
         document.getElementById('logout-button-repartidor').classList.remove('hidden');
@@ -54,7 +100,7 @@ function onUserLoggedOut() {
     document.getElementById('app').style.display = 'none';
     document.getElementById('auth-container').style.display = 'flex';
     document.getElementById('profile-button-text').textContent = "Ingresar";
-    // ui.renderAuthWall('login');
+    ui.renderAuthWall('login');
 }
 
 function checkPaymentStatus() {
@@ -84,7 +130,12 @@ function handleEvent(e) {
             ui.renderHomePageSkeleton(); 
             api.listenToPromotions(); 
         },
-        // ...
+        renderAuthWall: () => ui.renderAuthWall(target.dataset.view),
+        handleLogin: (e) => handleLogin(e),
+        handleRegister: (e) => handleRegister(e),
+        handleLogout: auth.handleLogout,
+        proceedToCheckout: checkout.proceedToCheckout,
+        // Aquí irían el resto de tus acciones
     };
     if (actions[action]) {
         actions[action](e);

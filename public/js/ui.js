@@ -1,13 +1,12 @@
 // public/js/ui.js
 // El "Pintor" de la aplicación. Se encarga de todo lo visual.
 
-import * as state from './state.js'; // Necesario para algunas funciones que aún no hemos refactorizado
-
 // --- HELPER: Creador de elementos del DOM ---
-export function createElement(tag, { classes = [], text = '', attrs = {}, children = [] } = {}) {
+export function createElement(tag, { classes = [], text = '', attrs = {}, children = [], innerHTML = '' } = {}) {
     const el = document.createElement(tag);
     if (classes.length) el.className = classes.join(' ');
     if (text) el.textContent = text;
+    if (innerHTML) el.innerHTML = innerHTML;
     for (const key in attrs) {
         el.setAttribute(key, attrs[key]);
     }
@@ -53,12 +52,63 @@ export const updateActiveNav = (activeSection) => {
     }
 };
 
-// --- COMPONENTES DE UI ---
+// --- RENDERIZADO DE AUTENTICACIÓN ---
+export function renderAuthWall(view = 'login') {
+    const container = document.getElementById('auth-container');
+    container.innerHTML = ''; // Limpiar antes de dibujar
 
-/**
- * Actualiza el botón del carrito basándose en el carrito que se le pasa.
- * @param {Array} cart - El array de productos en el carrito.
- */
+    let formContent;
+    if (view === 'login') {
+        formContent = [
+            createElement('h2', { classes: ['font-lilita', 'text-4xl', 'text-center', 'text-white', 'mb-6'], text: 'BIENVENIDO' }),
+            createElement('div', { classes: ['space-y-4'], children: [
+                createElement('input', { attrs: { id: 'login-email', type: 'email', placeholder: 'Correo electrónico' }, classes: ['w-full', 'bg-brand-darker', 'p-3', 'rounded-lg', 'text-white', 'border-2', 'border-gray-600', 'focus:border-brand-red', 'focus:outline-none'] }),
+                createElement('input', { attrs: { id: 'login-password', type: 'password', placeholder: 'Contraseña' }, classes: ['w-full', 'bg-brand-darker', 'p-3', 'rounded-lg', 'text-white', 'border-2', 'border-gray-600', 'focus:border-brand-red', 'focus:outline-none'] })
+            ]}),
+            createElement('button', { attrs: { id: 'login-button', 'data-action': 'handleLogin' }, classes: ['w-full', 'gradient-dragon-red', 'text-white', 'font-bold', 'py-3', 'rounded-lg', 'mt-6', 'relative'], children: [
+                createElement('span', { classes: ['btn-text'], text: 'Ingresar' }),
+                createElement('span', { classes: ['btn-loader', 'hidden', 'absolute', 'inset-0', 'flex', 'items-center', 'justify-center'], innerHTML: '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>' })
+            ]}),
+            createElement('div', { classes: ['text-center', 'mt-4'], children: [
+                createElement('button', { attrs: { 'data-action': 'renderAuthWall', 'data-view': 'forgot' }, classes: ['text-sm', 'text-gray-400', 'hover:text-brand-red'], text: '¿Olvidaste tu contraseña?' })
+            ]}),
+            createElement('p', { classes: ['text-center', 'text-gray-400', 'mt-6'], text: '¿No tienes cuenta? ', children: [
+                createElement('button', { attrs: { 'data-action': 'renderAuthWall', 'data-view': 'register' }, classes: ['font-bold', 'text-brand-red', 'hover:underline'], text: 'Regístrate' })
+            ]})
+        ];
+    } else if (view === 'register') {
+        // Lógica para crear el formulario de registro
+        formContent = [
+            createElement('h2', { classes: ['font-lilita', 'text-4xl', 'text-center', 'text-white', 'mb-6'], text: 'CREA TU CUENTA' }),
+            createElement('div', { classes: ['space-y-4'], children: [
+                createElement('input', { attrs: { id: 'register-name', type: 'text', placeholder: 'Nombre' }, classes: ['w-full', 'bg-brand-darker', 'p-3', 'rounded-lg', 'text-white', 'border-2', 'border-gray-600', 'focus:border-brand-red', 'focus:outline-none'] }),
+                createElement('input', { attrs: { id: 'register-email', type: 'email', placeholder: 'Correo electrónico' }, classes: ['w-full', 'bg-brand-darker', 'p-3', 'rounded-lg', 'text-white', 'border-2', 'border-gray-600', 'focus:border-brand-red', 'focus:outline-none'] }),
+                createElement('input', { attrs: { id: 'register-password', type: 'password', placeholder: 'Contraseña' }, classes: ['w-full', 'bg-brand-darker', 'p-3', 'rounded-lg', 'text-white', 'border-2', 'border-gray-600', 'focus:border-brand-red', 'focus:outline-none'] })
+            ]}),
+            createElement('button', { attrs: { id: 'register-button', 'data-action': 'handleRegister' }, classes: ['w-full', 'gradient-dragon-red', 'text-white', 'font-bold', 'py-3', 'rounded-lg', 'mt-6', 'relative'], children: [
+                createElement('span', { classes: ['btn-text'], text: 'Registrarme' }),
+                createElement('span', { classes: ['btn-loader', 'hidden', 'absolute', 'inset-0', 'flex', 'items-center', 'justify-center'], innerHTML: '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>' })
+            ]}),
+            createElement('p', { classes: ['text-center', 'text-gray-400', 'mt-6'], text: '¿Ya tienes cuenta? ', children: [
+                createElement('button', { attrs: { 'data-action': 'renderAuthWall', 'data-view': 'login' }, classes: ['font-bold', 'text-brand-red', 'hover:underline'], text: 'Ingresa aquí' })
+            ]})
+        ];
+    } else { // forgot password
+        // Lógica para crear el formulario de olvidé contraseña
+        formContent = [
+            // ...
+        ];
+    }
+    
+    const formContainer = createElement('div', {
+        classes: ['w-full', 'max-w-sm', 'bg-brand-dark', 'p-8', 'rounded-2xl', 'shadow-2xl', 'border-2', 'border-gray-700'],
+        children: formContent
+    });
+    
+    container.appendChild(formContainer);
+}
+
+// --- COMPONENTES DE UI ---
 export function updateCartButton(cart) {
     const cartButtonContainer = document.getElementById('cart-button-container');
     cartButtonContainer.innerHTML = ''; // Limpiar siempre
@@ -106,12 +156,10 @@ export function showNotification(message, isError = false) {
     container.appendChild(notification);
     lucide.createIcons();
     
-    // Animar la entrada
     setTimeout(() => {
         notification.classList.remove('translate-x-full');
     }, 10);
 
-    // Animar la salida y eliminar
     setTimeout(() => {
         notification.classList.add('translate-x-full');
         notification.addEventListener('transitionend', () => {
