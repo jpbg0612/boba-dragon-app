@@ -2,17 +2,17 @@
 
 name: CD (Continuous Deployment)
 
-# ACTUALIZADO: Ahora se activa en 'main' Y en 'develop'.
+# Se activa en 'main' Y en 'develop'.
 on:
   push:
     branches: [ main, develop ]
 
 jobs:
-  # El trabajo de prueba se queda igual.
   test:
     runs-on: ubuntu-latest
     env:
-      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      # Le damos la llave de prueba para que las pruebas siempre la usen.
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,6 @@ jobs:
       - run: npm install
       - run: npm test
 
-  # El trabajo de despliegue ahora es más inteligente.
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -30,19 +29,29 @@ jobs:
       - uses: actions/checkout@v4
       - run: cd functions && npm install
 
-      # ¡LA MAGIA! Este paso configura la llave de Stripe correcta.
-      - name: Configure Stripe Key
-        # Si estamos en la rama 'main', usa la llave LIVE. Si no, usa la de PRUEBA.
+      # Configura la llave SECRETA de Stripe correcta.
+      - name: Configure Stripe Secret Key
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "Using LIVE Stripe key"
+            echo "Using LIVE Stripe secret key"
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_LIVE }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           else
-            echo "Using TEST Stripe key"
-            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+            echo "Using TEST Stripe secret key"
+            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
       
-      # El paso de despliegue es el mismo, pero ahora se ejecutará con la llave correcta.
+      # Configura la llave PUBLICABLE de Stripe correcta.
+      - name: Configure Stripe Publishable Key
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Using LIVE Stripe publishable key"
+            sed -i 's|__STRIPE_PUBLISHABLE_KEY__|${{ secrets.STRIPE_PUBLISHABLE_KEY_LIVE }}|g' public/js/checkout.js
+          else
+            echo "Using TEST Stripe publishable key"
+            sed -i 's|__STRIPE_PUBLISHABLE_KEY__|${{ secrets.STRIPE_PUBLISHABLE_KEY_TEST }}|g' public/js/checkout.js
+          fi
+
+      # Despliega en Firebase con la configuración correcta.
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
