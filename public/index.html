@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOBA DRAGON - Pide tu Bebida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Librería de Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- Librería para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #10101A;
+        }
+        .font-lilita { font-family: 'Lilita One', cursive; }
+        .bg-brand-dark { background-color: #1A1A2E; }
+        .bg-brand-darker { background-color: #10101A; }
+        .border-brand-red { border-color: #E53E3E; }
+        .text-brand-red { color: #E53E3E; }
+        .bg-brand-red { background-color: #E53E3E; }
+        .gradient-dragon-red { background: linear-gradient(135deg, #E53E3E 0%, #C81E1E 100%); }
+        .card-hover:hover {
+            border-color: #E53E3E;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .star-rating svg {
+            cursor: pointer;
+        }
+         ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1A1A2E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E53E3E;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C81E1E;
+        }
+        .promo-carousel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 75%;
+            background: linear-gradient(to top, #1A1A2E, transparent);
+            z-index: 5;
+        }
+        /* Evita que los controles de Google Maps interfieran con el diseño */
+        .gmnoprint, .gm-style-cc {
+            display: none !important;
+        }
+        .pac-container {
+            background-color: #1A1A2E;
+            border: 1px solid #E53E3E;
+            border-radius: 8px;
+        }
+        .pac-item {
+            padding: 10px;
+            font-size: 14px;
+            color: #FFFFFF;
+            cursor: pointer;
+        }
+        .pac-item:hover {
+            background-color: #10101A;
+        }
+        .pac-item-query {
+            font-size: 14px;
+            color: #FFFFFF;
+        }
+        /* Estilos para el toggle de inventario */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #48bb78;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #48bb78;
+        }
+        /* Estilos para el date picker */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        .sortable-header {
+            cursor: pointer;
+        }
+        .sortable-header:hover {
+            color: #E53E3E;
+        }
+
+        /* --- ESTILOS DE ANIMACIÓN MEJORADOS --- */
+        .seccion {
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .modal-container {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .modal-container.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease-out;
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+        }
+        .modal-container.is-open .modal-content {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        
+        button:active, a:active {
+            transform: scale(0.97);
+            transition: transform 0.1s ease;
+        }
+
+        /* --- NUEVO: ESTILOS PARA SKELETON LOADERS --- */
+        .skeleton {
+            background-color: #2D2D44; /* Un gris oscuro del tema */
+            border-radius: 0.5rem;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Auth Wall: Visible por defecto, oculta la app -->
+    <div id="auth-container" class="fixed inset-0 bg-brand-darker z-50 flex items-center justify-center p-4">
+        <!-- El contenido del formulario de login/registro se insertará aquí dinámicamente -->
+    </div>
+
+    <!-- App principal: Oculta por defecto -->
+    <div id="app" class="max-w-4xl mx-auto min-h-screen bg-brand-darker shadow-2xl" style="display: none;">
+
+        <header class="p-4 border-b-2 border-brand-red flex justify-between items-center fixed top-0 w-full max-w-4xl bg-black/90 backdrop-blur-sm z-40">
+            <div class="flex items-center space-x-3">
+                <img src="https://4tsix0yujj.ufs.sh/f/2vMRHqOYUHc0FrdBXieDzTWwmhl5UyNfsFj9RSnotvEAKeiM" alt="Boba Dragon Logo" class="h-20 w-20 rounded-full shadow-lg">
+                <h1 class="font-lilita text-3xl text-white tracking-wider">BOBA DRAGON</h1>
+            </div>
+            <div id="header-extra-info" class="text-right">
+                 <div id="store-status"></div>
+                 <button id="logout-button-repartidor" data-action="handleLogout" class="hidden mt-2 bg-red-600 text-white font-bold py-1 px-3 rounded-lg text-sm">Salir</button>
+            </div>
+        </header>
+
+        <main id="main-content" class="p-4 md:p-8" style="padding-top: 140px; padding-bottom: 100px;">
+            <section id="inicio" class="seccion"></section>
+            <section id="menu" class="seccion" style="display: none;"></section>
+            <section id="creaciones" class="seccion" style="display: none;"></section>
+            <section id="recompensas" class="seccion" style="display: none;"></section>
+            <section id="perfil" class="seccion" style="display:none;"></section>
+            <section id="admin-panel" class="seccion" style="display:none;"></section>
+            <section id="admin-dashboard" class="seccion" style="display:none;"></section>
+            <section id="admin-pedidos" class="seccion" style="display:none;"></section>
+            <section id="admin-user-management" class="seccion" style="display:none;"></section>
+            <section id="admin-inventory-management" class="seccion" style="display:none;"></section>
+            <section id="admin-expense-management" class="seccion" style="display:none;"></section>
+            <section id="admin-product-cost-management" class="seccion" style="display:none;"></section>
+            <section id="admin-customer-analysis" class="seccion" style="display:none;"></section>
+            <section id="mis-pedidos" class="seccion" style="display:none;"></section>
+            <section id="repartidor-panel" class="seccion" style="display:none;"></section>
+        </main>
+
+        <nav id="main-nav" class="fixed bottom-0 left-0 right-0 max-w-4xl mx-auto bg-brand-dark border-t-2 border-gray-700 flex justify-around p-2 z-20">
+            <button data-action="renderHomePage" class="nav-item flex flex-col items-center text-brand-red"><i data-lucide="home"></i><span class="text-xs font-semibold">Inicio</span></button>
+            <button data-action="renderMenuPage" class="nav-item flex flex-col items-center text-gray-400 hover:text-brand-red"><i data-lucide="cup-soda"></i><span class="text-xs font-semibold">Menú</span></button>
+            <button data-action="renderCommunityPage" class="nav-item flex flex-col items-center text-gray-400 hover:text-brand-red"><i data-lucide="flame"></i><span class="text-xs font-semibold">Creaciones</span></button>
+            <button data-action="renderRewardsPage" class="nav-item flex flex-col items-center text-gray-400 hover:text-brand-red"><i data-lucide="star"></i><span class="text-xs font-semibold">Recompensas</span></button>
+            <button id="profile-nav-button" data-action="handleProfileClick" class="nav-item flex flex-col items-center text-gray-400 hover:text-brand-red"><i data-lucide="user-circle"></i><span class="text-xs font-semibold" id="profile-button-text">Ingresar</span></button>
+        </nav>
+        
+        <div id="cart-button-container" class="fixed bottom-20 right-5 z-30"></div>
+    </div>
+
+    <!-- Modales de la App -->
+    <div id="customization-modal" class="modal-container fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4">
+        <div id="modal-content" class="modal-content bg-brand-dark rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col border-2 border-gray-700"></div>
+    </div>
+    <div id="cart-modal" class="modal-container fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+         <div class="modal-content bg-brand-dark rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col border-2 border-gray-700">
+             <div id="cart-modal-content"></div>
+         </div>
+    </div>
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="modal-container fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-brand-dark rounded-2xl shadow-xl w-full max-w-sm p-6 border-2 border-gray-700 text-center">
+            <h3 id="confirmation-title" class="text-lg font-bold text-white mb-4">Confirmar Acción</h3>
+            <p id="confirmation-message" class="text-gray-300 mb-6">¿Estás seguro?</p>
+            <div class="flex justify-center space-x-4">
+                <button data-action="hideConfirmationModal" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">Cancelar</button>
+                <button data-action="confirmAction" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="js/main.js"></script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyADSoG_sXtes_8-fWHkftYd_BsmGF777-E&libraries=places&callback=initAutocomplete" async defer></script>
+    
+</body>
+</html>
