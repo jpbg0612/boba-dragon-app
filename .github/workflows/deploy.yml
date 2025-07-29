@@ -1,0 +1,57 @@
+# .github/workflows/deploy.yml
+
+# Nombre de nuestro nuevo "supervisor de despliegue".
+name: CD (Continuous Deployment)
+
+# ¿Cuándo debe activarse este robot?
+# Solo cuando hagamos un 'git push' a la rama principal (main).
+on:
+  push:
+    branches: [ main ]
+
+# Lista de trabajos que debe hacer.
+jobs:
+  # Primero, definimos un trabajo para probar la app.
+  # Es una buena práctica volver a probar antes de desplegar.
+  test:
+    runs-on: ubuntu-latest
+    env:
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+
+  # El segundo trabajo: desplegar la app.
+  # Este trabajo SOLO se ejecutará si el trabajo 'test' fue exitoso.
+  deploy:
+    # 'needs: test' es la clave. Le dice al robot que espere al de calidad.
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Paso para instalar las dependencias de las funciones en la nube
+      - name: Install Functions Dependencies
+        run: cd functions && npm install
+      
+      # ¡EL PASO MÁS IMPORTANTE!
+      # Este paso utiliza una "acción" oficial de Firebase para desplegar.
+      # Usa un secreto llamado FIREBASE_TOKEN para autenticarse de forma segura.
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          action: deploy
+          project_id: 'bobadragonapp' # Tu ID de proyecto de Firebase
+        env:
+          # Le damos la "llave maestra" de Firebase al robot de forma segura.
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
