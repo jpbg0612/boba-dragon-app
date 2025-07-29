@@ -8,21 +8,11 @@ import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.
 import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js";
 
 // --- IMPORTANTE: CONFIGURACIÓN SEGURA DE FIREBASE ---
-// Las claves han sido eliminadas para evitar vulnerabilidades de seguridad.
-// NUNCA deben estar escritas directamente en el código que se sube a GitHub.
-// Nuestro siguiente paso será configurar estas claves de forma segura.
-const firebaseConfig = {
-    apiKey: "TU_API_KEY_AQUI", // Lo configuraremos de forma segura
-    authDomain: "TU_AUTH_DOMAIN_AQUI",
-    projectId: "bobadragonapp", // Este valor es público y puede quedarse
-    storageBucket: "TU_STORAGE_BUCKET_AQUI",
-    messagingSenderId: "TU_MESSAGING_SENDER_ID_AQUI",
-    appId: "TU_APP_ID_AQUI",
-    measurementId: "TU_MEASUREMENT_ID_AQUI"
-};
+// Ya no definimos la configuración aquí. El script /__/firebase/init.js
+// que añadimos en index.html la proveerá automáticamente como una variable global `firebaseConfig`.
 
-// Inicializamos Firebase y exportamos los servicios.
-export const app = initializeApp(firebaseConfig);
+// Inicializamos Firebase con la configuración segura que nos da Firebase Hosting.
+export const app = initializeApp(window.firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const messaging = getMessaging(app);
