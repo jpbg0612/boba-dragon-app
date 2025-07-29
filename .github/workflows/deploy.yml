@@ -39,17 +39,18 @@ jobs:
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
       
-      # ¡CORREGIDO! Configura la llave PUBLICABLE de Stripe correcta.
+      # ¡CORREGIDO! Configura la llave PUBLICABLE de Stripe correcta usando un método más robusto.
       - name: Configure Stripe Publishable Key
-        # Cambiamos el delimitador de '/' a '|' para evitar errores con caracteres especiales.
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "Using LIVE Stripe publishable key"
-            sed -i 's|__STRIPE_PUBLISHABLE_KEY__|${{ secrets.STRIPE_PUBLISHABLE_KEY_LIVE }}|g' public/js/checkout.js
+            KEY="${{ secrets.STRIPE_PUBLISHABLE_KEY_LIVE }}"
           else
             echo "Using TEST Stripe publishable key"
-            sed -i 's|__STRIPE_PUBLISHABLE_KEY__|${{ secrets.STRIPE_PUBLISHABLE_KEY_TEST }}|g' public/js/checkout.js
+            KEY="${{ secrets.STRIPE_PUBLISHABLE_KEY_TEST }}"
           fi
+          # Este comando es más seguro y no falla con caracteres especiales.
+          awk -v key="$KEY" '{gsub(/__STRIPE_PUBLISHABLE_KEY__/, key)}1' public/js/checkout.js > public/js/checkout.tmp.js && mv public/js/checkout.tmp.js public/js/checkout.js
 
       # Despliega en Firebase con la configuración correcta.
       - name: Deploy to Firebase
