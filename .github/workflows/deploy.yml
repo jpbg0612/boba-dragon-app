@@ -1,57 +1,52 @@
 # .github/workflows/deploy.yml
 
-# Nombre de nuestro nuevo "supervisor de despliegue".
 name: CD (Continuous Deployment)
 
-# ¿Cuándo debe activarse este robot?
-# Solo cuando hagamos un 'git push' a la rama principal (main).
+# ACTUALIZADO: Ahora se activa en 'main' Y en 'develop'.
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
 
-# Lista de trabajos que debe hacer.
 jobs:
-  # Primero, definimos un trabajo para probar la app.
-  # Es una buena práctica volver a probar antes de desplegar.
+  # El trabajo de prueba se queda igual.
   test:
     runs-on: ubuntu-latest
     env:
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test
+      - run: npm install
+      - run: npm test
 
-  # El segundo trabajo: desplegar la app.
-  # Este trabajo SOLO se ejecutará si el trabajo 'test' fue exitoso.
+  # El trabajo de despliegue ahora es más inteligente.
   deploy:
-    # 'needs: test' es la clave. Le dice al robot que espere al de calidad.
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - run: cd functions && npm install
+
+      # ¡LA MAGIA! Este paso configura la llave de Stripe correcta.
+      - name: Configure Stripe Key
+        # Si estamos en la rama 'main', usa la llave LIVE. Si no, usa la de PRUEBA.
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Using LIVE Stripe key"
+            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_LIVE }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+          else
+            echo "Using TEST Stripe key"
+            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
       
-      # Paso para instalar las dependencias de las funciones en la nube
-      - name: Install Functions Dependencies
-        run: cd functions && npm install
-      
-      # ¡EL PASO MÁS IMPORTANTE!
-      # Este paso utiliza una "acción" oficial de Firebase para desplegar.
-      # Usa un secreto llamado FIREBASE_TOKEN para autenticarse de forma segura.
+      # El paso de despliegue es el mismo, pero ahora se ejecutará con la llave correcta.
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
           action: deploy
-          project_id: 'bobadragonapp' # Tu ID de proyecto de Firebase
+          project_id: 'bobadragonapp'
         env:
-          # Le damos la "llave maestra" de Firebase al robot de forma segura.
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

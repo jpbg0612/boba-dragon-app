@@ -1,44 +1,26 @@
 # .github/workflows/ci.yml
 
-# Nombre de nuestro "supervisor robot" o flujo de trabajo.
 name: CI (Continuous Integration)
 
-# ¿Cuándo debe activarse el robot?
-# En este caso, cada vez que hagamos un 'git push' a la rama principal (main).
+# ACTUALIZADO: Ahora se activa en 'main' Y en 'develop'.
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
 
-# Lista de trabajos que el robot debe hacer.
 jobs:
-  # Solo tenemos un trabajo, que llamaremos "test-app".
   test-app:
-    # El robot trabajará en una computadora virtual con la última versión de Ubuntu.
     runs-on: ubuntu-latest
-
-    # ¡NUEVO! Le damos al robot acceso a nuestra "caja fuerte" (los secretos).
-    # Esto crea variables de entorno seguras que el robot puede usar.
     env:
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-
-    # La secuencia de pasos que el robot debe seguir.
     steps:
-      # Paso 1: Descargar la última versión de nuestro código.
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # Paso 2: Instalar Node.js para que pueda entender nuestro JavaScript.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Usamos la misma versión que nuestras Firebase Functions
-
-      # Paso 3: Instalar todas las dependencias de nuestro proyecto (Jest, etc.).
+          node-version: '18'
       - name: Install dependencies
         run: npm install
-
-      # Paso 4: ¡Ejecutar las pruebas! Este es el paso más importante.
-      # El robot ahora puede usar las claves si alguna prueba las necesitara.
       - name: Run tests
         run: npm test
