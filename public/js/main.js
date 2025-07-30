@@ -15,7 +15,7 @@ import { getFirestore, collection, getDocs } from "https://www.gstatic.com/fireb
 import * as state from './state.js';
 import * as auth from './auth.js';
 import * as api from './api.js';
-import * => ui from './ui.js';
+import * as ui from './ui.js'; // CORRECCIÓN APLICADA: Era 'import * => ui', ahora es 'import * as ui'
 import * as checkout from './checkout.js';
 import { loadGoogleMapsScript } from './maps.js';
 
@@ -263,4 +263,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log("Aplicación iniciada. Firebase configurado.");
 });
-
