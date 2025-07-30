@@ -1,22 +1,30 @@
 // public/js/auth.js
-// Módulo de autenticación. Ahora se encarga de inicializar Firebase.
+// Módulo de autenticación. Ya NO inicializa Firebase.
+// Simplemente utiliza los servicios que ya fueron inicializados en index.html.
 
-// ¡LA CLAVE! Importamos las herramientas directamente desde las librerías de Firebase.
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { getMessaging } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js";
+// ¡LA CLAVE! Obtenemos los servicios del objeto global `firebase` que ya existe.
+const auth = firebase.auth();
+const db = firebase.firestore();
+const messaging = firebase.messaging();
 
-// Leemos la configuración segura que nuestro robot inyecta en el HTML.
-const firebaseConfig = window.firebaseConfig;
+// Exportamos las constantes para que otros archivos como api.js puedan usarlas.
+export { auth, db, messaging };
 
-// Inicializamos Firebase y exportamos los servicios.
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const messaging = getMessaging(app);
+// --- LÓGICA DE AUTENTICACIÓN (sin cambios, sigue funcionando igual) ---
 
-// --- LÓGICA DE AUTENTICACIÓN (sin cambios) ---
+// Importamos las funciones que necesitamos directamente desde el SDK global.
+// Esto es más limpio y aprovecha los scripts ya cargados.
+const { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged, 
+    sendPasswordResetEmail, 
+    sendEmailVerification 
+} = firebase.auth;
+
+const { doc, setDoc, getDoc, serverTimestamp } = firebase.firestore;
+
 
 export async function handleRegister(name, email, password) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);

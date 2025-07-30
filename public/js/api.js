@@ -1,10 +1,12 @@
 // public/js/api.js
 // El "Mensajero". Su única responsabilidad es comunicarse con Firestore.
 
-import { db } from './auth.js';
+import { db } from './auth.js'; // Sigue obteniendo 'db' desde auth.js, que ahora está corregido.
 import * as state from './state.js';
 import { renderHomePage, showNotification } from './ui.js';
-import { collection, query, where, getDocs, onSnapshot, doc, getDoc, updateDoc, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+// Obtenemos las funciones de Firestore desde el SDK global.
+const { collection, query, where, getDocs, onSnapshot, doc, getDoc, updateDoc, serverTimestamp, addDoc } = firebase.firestore;
 
 // --- LISTENERS DE DATOS ---
 

@@ -4,39 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOBA DRAGON - Pide tu Bebida</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 1. Estilos: Quitamos el CDN de Tailwind y enlazamos nuestro archivo CSS local -->
+    <!-- Este archivo lo generaremos en el Paso 4 -->
+    <link href="/css/output.css" rel="stylesheet">
+    
+    <!-- Fuentes y otros recursos -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Lilita+One&display.swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Lilita+One&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Aquí puedes mantener tus estilos personalizados si los tenías -->
     <style>
-        /* ... tus estilos ... */
+        /* Estilos personalizados que no usan Tailwind pueden ir aquí */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* ... etc ... */
     </style>
 </head>
-<body class="text-gray-200">
+<body class="bg-gray-900 text-gray-200">
 
     <!-- Contenido principal de la app -->
-    <div id="auth-container" class="fixed inset-0 bg-brand-darker z-50 flex items-center justify-center p-4"></div>
-    <div id="app" class="max-w-4xl mx-auto min-h-screen bg-brand-darker shadow-2xl" style="display: none;">
-        <!-- ... header, main, nav, etc. ... -->
+    <!-- Es buena práctica tener un contenedor raíz para tu app -->
+    <div id="root">
+        <div id="auth-container" class="fixed inset-0 bg-gray-800 z-50 flex items-center justify-center p-4">
+            <!-- Aquí irá tu UI de login -->
+        </div>
+        <div id="app" class="max-w-4xl mx-auto min-h-screen bg-gray-900 shadow-2xl" style="display: none;">
+            <!-- Aquí irá el contenido principal de tu app una vez autenticado -->
+        </div>
     </div>
 
-    <!-- ¡CORRECCIÓN DEFINITIVA! -->
-    <!-- 1. Cargamos TODAS las herramientas de Firebase que nuestra app necesita -->
-    <!-- Usamos la misma versión (11.10.0) que nuestros archivos JS para consistencia -->
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js"></script>
+    <!-- ========= SECCIÓN DE SCRIPTS (EL ORDEN ES CRÍTICO) ========= -->
+
+    <!-- 1. Carga los SDK de Firebase que necesites -->
+    <!-- Usamos una versión reciente y consistente para todos -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions.js"></script>
     
-    <!-- 2. Ahora sí, el "script mágico" tiene todo lo que necesita para funcionar -->
+    <!-- 2. Inicializa Firebase automáticamente con la configuración del Hosting -->
+    <!-- Este script ahora encontrará los SDKs de arriba y funcionará correctamente -->
     <script src="/__/firebase/init.js"></script>
     
-    <!-- 3. Finalmente, cargamos el resto de nuestra app -->
-    <script type="module" src="js/main.js"></script>
-    
+    <!-- 3. Finalmente, carga TUS scripts como módulos -->
+    <!-- El navegador esperará a que todo lo de arriba esté listo antes de ejecutar estos -->
+    <script type="module" src="./js/api.js"></script>
+    <script type="module" src="./js/auth.js"></script>
+    <script type="module" src="./js/checkout.js"></script>
+    <script type="module" src="./js/maps.js"></script>
+    <script type="module" src="./js/state.js"></script>
+    <script type="module" src="./js/ui.js"></script>
+    <script type="module" src="./js/main.js"></script>
+    <!-- Agrega aquí cualquier otro script tuyo, siempre con type="module" -->
+
 </body>
 </html>
