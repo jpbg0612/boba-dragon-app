@@ -37,9 +37,13 @@ jobs:
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
 
-      # Inyectamos la config usando Node.js, que es 100% robusto.
+      # ¡CORRECCIÓN DEFINITIVA! Pasamos el secreto como una variable de entorno.
       - name: Inject Firebase Config
-        run: node -e "let fs = require('fs'); let file = 'public/index.html'; let data = fs.readFileSync(file, 'utf8'); let result = data.replace('__FIREBASE_CONFIG__', '${{ secrets.FIREBASE_CONFIG }}'); fs.writeFileSync(file, result, 'utf8');"
+        # 1. Le damos el secreto al robot como una variable de entorno segura.
+        env:
+          FIREBASE_CONFIG_JSON: ${{ secrets.FIREBASE_CONFIG }}
+        # 2. El script de Node.js ahora lee esa variable de entorno.
+        run: node -e "let fs = require('fs'); let file = 'public/index.html'; let data = fs.readFileSync(file, 'utf8'); let result = data.replace('__FIREBASE_CONFIG__', process.env.FIREBASE_CONFIG_JSON); fs.writeFileSync(file, result, 'utf8');"
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
