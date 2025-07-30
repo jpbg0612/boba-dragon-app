@@ -8,24 +8,40 @@ on:
 
 jobs:
   test:
-    # ... (el trabajo de prueba se queda igual) ...
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npm test
 
   deploy:
+    name: Deploy
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cd functions && npm install
+      - name: Install Functions Dependencies
+        run: cd functions && npm install
 
-      # ... (la configuración de las claves de Stripe se queda igual) ...
-      
-      # ¡NUEVO! Inyectamos la configuración de Firebase en el index.html
+      - name: Configure Stripe Keys
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Using LIVE Stripe secret key"
+            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_LIVE }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+          else
+            echo "Using TEST Stripe secret key"
+            npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
+
       - name: Inject Firebase Config
         run: |
           # Reemplazamos un marcador de posición en index.html con el secreto
           sed -i 's|__FIREBASE_CONFIG__|${{ secrets.FIREBASE_CONFIG }}|g' public/index.html
 
-      # Despliega en Firebase
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
