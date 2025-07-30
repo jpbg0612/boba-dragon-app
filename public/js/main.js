@@ -8,26 +8,21 @@ import * as checkout from './checkout.js';
 import { loadGoogleMapsScript } from './maps.js';
 
 // --- VARIABLES GLOBALES ---
-let confirmCallback = null;
 let customerOrdersUnsubscribe = null; 
 
 // --- MANEJADORES DE AUTENTICACIÓN (UI) ---
 const handleLogin = async (e) => {
     const button = e.target.closest('button');
     ui.setButtonLoadingState(button);
-
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    
     if (!email || !password) {
         ui.showNotification("Por favor completa todos los campos", true);
         ui.revertButtonLoadingState(button);
         return;
     }
-    
     try {
         await auth.handleLogin(email, password);
-        // El listener onUserLoggedIn se encargará del resto.
     } catch (error) {
         ui.showNotification("Usuario o contraseña incorrectos", true);
         ui.revertButtonLoadingState(button);
@@ -39,25 +34,20 @@ const handleRegister = async (e) => {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
-
     if (!name || !email || !password) {
         ui.showNotification("Por favor completa todos los campos", true);
         return;
     }
-    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         ui.showNotification("Por favor ingresa un correo electrónico válido.", true);
         return;
     }
-
     if (password.length < 6) {
         ui.showNotification("La contraseña debe tener al menos 6 caracteres.", true);
         return;
     }
-
     ui.setButtonLoadingState(button);
-
     try {
         await auth.handleRegister(name, email, password);
         ui.showNotification("¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
@@ -90,6 +80,7 @@ function onUserLoggedIn(userProfile) {
             api.listenToPromotions();
         }
     }
+    customerOrdersUnsubscribe = api.listenToCustomerOrders(userProfile.uid);
 }
 
 function onUserLoggedOut() {
@@ -135,7 +126,6 @@ function handleEvent(e) {
         handleRegister: (e) => handleRegister(e),
         handleLogout: auth.handleLogout,
         proceedToCheckout: checkout.proceedToCheckout,
-        // Aquí irían el resto de tus acciones
     };
     if (actions[action]) {
         actions[action](e);
@@ -146,6 +136,8 @@ function handleEvent(e) {
 document.addEventListener('DOMContentLoaded', () => {
     auth.initAuthListener(onUserLoggedIn, onUserLoggedOut);
     checkPaymentStatus(); 
+    api.checkStoreStatus();
+    setInterval(api.checkStoreStatus, 60000);
     document.body.addEventListener('click', handleEvent);
     lucide.createIcons();
 });
