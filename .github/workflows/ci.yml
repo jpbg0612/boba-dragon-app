@@ -1,26 +1,37 @@
-# .github/workflows/ci.yml
-
 name: CI (Continuous Integration)
 
-# ACTUALIZADO: Ahora se activa en 'main' Y en 'develop'.
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop ] # Se activa en push a las ramas main y develop
 
 jobs:
   test-app:
-    runs-on: ubuntu-latest
+    name: Run Tests
+    runs-on: ubuntu-latest # Ejecuta en una máquina virtual Ubuntu
     env:
-      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      # Inyecta las claves secretas para el entorno de pruebas.
+      # Asegúrate de que estos secretos estén configurados en tu repositorio de GitHub.
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST }} # Usa la clave de prueba para CI
       GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      # Si tus tests de JavaScript interactúan directamente con Firebase,
+      # podrías necesitar inyectar la configuración de Firebase aquí también:
+      # FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
     steps:
-      - name: Checkout repository
+      - name: Checkout repository # Descarga el código de tu repositorio
         uses: actions/checkout@v4
-      - name: Setup Node.js
+      
+      - name: Setup Node.js # Configura el entorno de Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - name: Install dependencies
+          node-version: '18' # Usa la versión 18 de Node.js
+
+      - name: Install dependencies # Instala las dependencias del proyecto
         run: npm install
-      - name: Run tests
+
+      # Si tus tests requieren que los archivos frontend (CSS, JS) estén construidos,
+      # descomenta la siguiente línea. Si solo son tests unitarios, no es necesario.
+      # - name: Build Frontend Assets
+      #   run: npm run build
+
+      - name: Run tests # Ejecuta las pruebas del proyecto
         run: npm test

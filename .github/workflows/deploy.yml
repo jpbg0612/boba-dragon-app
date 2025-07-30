@@ -2,11 +2,11 @@ name: CD (Continuous Deployment)
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop ] # Se activa en push a las ramas main y develop
 
 jobs:
   test:
-    name: Test
+    name: Test # Job para ejecutar las pruebas antes del despliegue
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,25 +17,27 @@ jobs:
       - run: npm test
 
   deploy:
-    name: Deploy
-    needs: test
+    name: Deploy # Job para desplegar la aplicación
+    needs: test # Este job solo se ejecuta si el job 'test' pasa
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm install
+      - run: npm install # Instala las dependencias del proyecto
 
-      # ================== LA CORRECCIÓN CLAVE ==================
-      # 1. Le decimos al robot que construya el archivo CSS.
+      # ================== PASOS DE CONSTRUCCIÓN Y CONFIGURACIÓN ==================
+      # 1. Construye el archivo CSS de Tailwind para producción.
       - name: Build CSS for Production
         run: npm run build
-      # =======================================================
 
+      # 2. Instala las dependencias de las Firebase Functions.
       - name: Install Functions Dependencies
         run: cd functions && npm install
 
+      # 3. Configura las claves secretas de Stripe para las Firebase Functions (backend).
+      # Esto inyecta las claves en el entorno de las funciones, dependiendo de la rama.
       - name: Configure Stripe Keys
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
@@ -43,16 +45,22 @@ jobs:
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_LIVE }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           else
             echo "Using TEST Stripe secret key"
+            echo "Using TEST Stripe secret key" # Mensaje duplicado, puedes quitar uno si quieres
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
 
-      # El paso 'Inject Firebase Config' se ha ELIMINADO porque ya no es necesario.
+      # NOTA IMPORTANTE: El paso 'Inject Firebase Config' para el FRONTEND
+      # ya NO es necesario aquí en el flujo de GitHub Actions.
+      # La configuración de Firebase para el frontend (Hosting) se maneja
+      # automáticamente al incluir el script /__/firebase/init.js en tu index.html.
+      # Tu main.js ahora es flexible para usar esta configuración o la del entorno Canvas.
+      # ===========================================================================
 
+      # 4. Despliega la aplicación a Firebase Hosting y Functions.
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
           action: deploy
-          project_id: 'bobadragonapp'
+          project_id: 'bobadragonapp' # Asegúrate de que este sea el ID correcto de tu proyecto Firebase
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }} # Token para autenticarse con Firebase
