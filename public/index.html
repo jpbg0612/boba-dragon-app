@@ -1,15 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- ... (tu head se queda igual) ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOBA DRAGON - Pide tu Bebida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Lilita+One&display.swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ... tus estilos ... */
+    </style>
 </head>
 <body class="text-gray-200">
 
-    <!-- ... (tu contenido HTML se queda igual) ... -->
+    <!-- Contenido principal de la app -->
+    <div id="auth-container" class="fixed inset-0 bg-brand-darker z-50 flex items-center justify-center p-4"></div>
+    <div id="app" class="max-w-4xl mx-auto min-h-screen bg-brand-darker shadow-2xl" style="display: none;">
+        <!-- ... header, main, nav, etc. ... -->
+    </div>
 
-    <!-- ¡CORRECCIÓN NUCLEAR! -->
-    <!-- Ya no usamos los scripts de Firebase aquí. -->
-    <!-- En su lugar, el robot inyectará la configuración directamente. -->
+    <!-- El robot de despliegue inyectará la configuración de Firebase aquí -->
     <script>
       const firebaseConfig = __FIREBASE_CONFIG__;
     </script>

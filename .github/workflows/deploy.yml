@@ -37,12 +37,9 @@ jobs:
             npx firebase-tools functions:config:set stripe.secret="${{ secrets.STRIPE_SECRET_KEY_TEST }}" --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
 
-      # ¡CORREGIDO! Inyectamos la configuración de Firebase de forma robusta.
+      # Inyectamos la config usando Node.js, que es 100% robusto.
       - name: Inject Firebase Config
-        run: |
-          CONFIG='${{ secrets.FIREBASE_CONFIG }}'
-          # Este comando es más seguro y no falla con caracteres especiales.
-          awk -v config="$CONFIG" '{gsub(/__FIREBASE_CONFIG__/, config)}1' public/index.html > public/index.tmp.html && mv public/index.tmp.html public/index.html
+        run: node -e "let fs = require('fs'); let file = 'public/index.html'; let data = fs.readFileSync(file, 'utf8'); let result = data.replace('__FIREBASE_CONFIG__', '${{ secrets.FIREBASE_CONFIG }}'); fs.writeFileSync(file, result, 'utf8');"
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
