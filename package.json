@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "init:tailwind": "tailwindcss init",
-    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
+    "build": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css"
   },
   "keywords": [],
   "author": "",
