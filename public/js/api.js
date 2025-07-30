@@ -1,10 +1,6 @@
 // public/js/api.js
 // El "Mensajero". Su única responsabilidad es comunicarse con Firestore.
 
-// ¡IMPORTANTE! Ya no importamos 'db' desde auth.js.
-// En su lugar, las funciones de este módulo recibirán la instancia de db
-// directamente desde main.js como un argumento.
-
 // Importa las funciones específicas de Firestore que necesitas directamente desde CDN.
 // Esto es crucial para que funcione con el sistema de módulos.
 import {

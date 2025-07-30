@@ -14,8 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Lilita+One&display=swap" rel="stylesheet">
     
     <!-- Librerías de terceros que se cargan globalmente antes de tu JS principal -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Es CRUCIAL que Stripe v3 se cargue aquí, antes de cualquier script que lo use -->
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Aquí puedes mantener tus estilos personalizados si los tenías -->
@@ -71,16 +72,14 @@
 
     <!-- ========= SECCIÓN DE SCRIPTS (EL ORDEN ES CRÍTICO) ========= -->
 
-    <!-- Carga la librería de Stripe V3 (¡CRUCIAL para checkout.js!) -->
-    <!-- Debe cargarse ANTES de tu script principal que usa Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
-    
     <!-- 1. Carga el script de inicialización automática de Firebase Hosting. -->
     <!-- Este script inyecta la configuración de Firebase en el objeto global 'firebase'. -->
+    <!-- Es crucial que se cargue ANTES de tu main.js -->
     <script src="/__/firebase/init.js"></script>
 
     <!-- 2. Carga tu script principal como un MÓDULO. -->
-    <!-- main.js ahora será flexible para usar la configuración de 'firebase' global (Hosting) -->
+    <!-- Este es el ÚNICO script de tu app que debe cargarse así en el HTML. -->
+    <!-- main.js ahora es flexible para usar la configuración de 'firebase' global (Hosting) -->
     <!-- o las variables '__firebase_config' (Canvas). -->
     <script type="module" src="./js/main.js"></script>
 

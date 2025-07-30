@@ -1,7 +1,7 @@
 // public/js/main.js
 
 // Importa los módulos de Firebase necesarios directamente desde CDN.
-// Es CRUCIAL que estas importaciones estén aquí y que el script main.js
+// Es CRUCIAL que estas importaciones estén aquí y y que el script main.js
 // sea cargado con type="module" en tu index.html.
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -15,7 +15,7 @@ import { getFirestore, collection, getDocs } from "https://www.gstatic.com/fireb
 import * as state from './state.js';
 import * as auth from './auth.js';
 import * as api from './api.js';
-import * as ui from './ui.js';
+import * => ui from './ui.js';
 import * as checkout from './checkout.js';
 import { loadGoogleMapsScript } from './maps.js';
 
@@ -30,20 +30,22 @@ let currentUserId = null;
 function initializeFirebaseAdaptive() {
     // Detecta si estamos en el entorno de Canvas o en Firebase Hosting
     if (typeof __firebase_config !== 'undefined') {
-        // Entorno de Canvas: Usa la configuración inyectada
+        // Entorno de Canvas: Usa la configuración inyectada por el entorno de Canvas
         const firebaseConfig = JSON.parse(__firebase_config);
         firebaseApp = initializeApp(firebaseConfig);
         console.log("Firebase inicializado para Canvas.");
     } else if (typeof firebase !== 'undefined' && typeof firebase.app === 'function') {
         // Entorno de Firebase Hosting: Usa la app inicializada por /__/firebase/init.js
-        if (!getApps().length) { // Solo inicializa si no hay apps ya inicializadas
+        // Asegúrate de que la app no haya sido ya inicializada para evitar errores
+        if (!getApps().length) {
             firebaseApp = firebase.app(); // Usa la app pre-inicializada por el script de Firebase Hosting
         } else {
             firebaseApp = getApp(); // Obtiene la app ya inicializada
         }
         console.log("Firebase inicializado para Hosting.");
     } else {
-        // Fallback si no se detecta ningún entorno (debería ser raro)
+        // Fallback si no se detecta ningún entorno (esto solo debería ocurrir en desarrollo local
+        // sin emuladores o sin la configuración de Firebase inyectada).
         console.error("No se pudo detectar el entorno de Firebase. Usando configuración de fallback.");
         const fallbackConfig = {
             apiKey: "TU_API_KEY_DE_FIREBASE", // ¡IMPORTANTE! Reemplaza con tu clave API real para desarrollo local sin Canvas/Hosting

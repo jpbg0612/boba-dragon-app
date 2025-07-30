@@ -3,7 +3,7 @@
 
 // Importa las funciones de Firebase Functions directamente desde CDN.
 // Asegúrate de que la versión coincida con la que tienes en tu proyecto.
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js"; // Asegúrate de usar la misma versión que en main.js y auth.js
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js"; // Usar la misma versión que en main.js
 import * as state from './state.js';
 import { showNotification, setButtonLoadingState, revertButtonLoadingState } from './ui.js';
 

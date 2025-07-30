@@ -158,14 +158,8 @@ export function initAuthListener(authInstance, initialAuthToken, onUserLoggedInC
     // Luego, establece el listener para cualquier cambio en el estado de autenticación
     onAuthStateChanged(authInstance, async (user) => {
         if (user) {
-            // Si hay un usuario, intenta obtener su perfil de Firestore
-            // NOTA: dbInstance no está directamente disponible aquí en el ámbito de initAuthListener.
-            // Necesitamos que getUserProfile reciba dbInstance.
-            // La solución es pasar dbInstance a initAuthListener si getUserProfile se llama aquí,
-            // o asegurarse de que getUserProfile se llame desde main.js donde dbInstance es accesible.
-            // En la estructura actual, main.js llama a onUserLoggedIn que luego llama a getUserProfile.
-            // Por lo tanto, no necesitamos dbInstance directamente aquí.
-            onUserLoggedInCallback(user); // Pasa el objeto 'user' de Firebase Auth
+            // Si hay un usuario, llama al callback. getUserProfile se llama en main.js
+            onUserLoggedInCallback(user); 
         } else {
             // Si no hay usuario (sesión cerrada o nunca iniciada)
             onUserLoggedOutCallback();
